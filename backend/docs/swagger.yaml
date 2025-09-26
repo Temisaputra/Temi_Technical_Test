@@ -1,0 +1,433 @@
+basePath: /api
+definitions:
+  helper.Response:
+    properties:
+      data: {}
+      message:
+        type: string
+      meta: {}
+      status:
+        type: integer
+    type: object
+  presenter.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  presenter.LoginResponse:
+    properties:
+      access_token:
+        type: string
+      user:
+        $ref: '#/definitions/presenter.UserResponse'
+    type: object
+  presenter.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  presenter.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      role:
+        type: string
+    type: object
+  presenter.VoucherRequest:
+    properties:
+      discount:
+        type: number
+      expired_date:
+        type: string
+      voucher_code:
+        type: string
+    required:
+    - discount
+    - expired_date
+    type: object
+  presenter.VoucherResponse:
+    properties:
+      discount:
+        type: number
+      expired_date:
+        type: string
+      "no":
+        type: integer
+      voucher_code:
+        type: string
+    type: object
+  response.Meta:
+    properties:
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total_data:
+        type: integer
+      total_page:
+        type: integer
+    type: object
+host: localhost:8085
+info:
+  contact:
+    email: youremail@example.com
+    name: Temi Saputra
+  description: Documentation for my REST API
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: My REST API
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login a user
+      parameters:
+      - description: Login request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/presenter.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/presenter.LoginResponse'
+              type: object
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/helper.Response'
+      summary: Login a user
+      tags:
+      - auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      parameters:
+      - description: Register request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/presenter.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/helper.Response'
+      summary: Register a new user
+      tags:
+      - auth
+  /voucher-create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new voucher
+      parameters:
+      - description: Voucher data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/presenter.VoucherRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/presenter.VoucherResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Create a new voucher
+      tags:
+      - Voucher
+  /voucher-delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a voucher
+      parameters:
+      - description: Voucher ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/presenter.VoucherResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete a voucher
+      tags:
+      - Voucher
+  /voucher-update/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update a voucher
+      parameters:
+      - description: Voucher ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Voucher data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/presenter.VoucherRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/presenter.VoucherResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Update a voucher
+      tags:
+      - Voucher
+  /vouchers:
+    get:
+      consumes:
+      - application/json
+      description: Get List Voucher
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Keyword for search
+        in: query
+        name: keyword
+        type: string
+      - description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - description: Order type (asc/desc)
+        in: query
+        name: order_type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/presenter.VoucherResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/response.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get List Voucher
+      tags:
+      - Voucher
+  /vouchers/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get Voucher by ID
+      parameters:
+      - description: Voucher ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/presenter.VoucherResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get Product by ID
+      tags:
+      - Product
+  /vouchers/export-csv:
+    get:
+      consumes:
+      - application/json
+      description: Export Vouchers to CSV
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Export Vouchers to CSV
+      tags:
+      - Voucher
+  /vouchers/upload-csv:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload Vouchers from CSV
+      parameters:
+      - description: CSV file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Upload Vouchers from CSV
+      tags:
+      - Voucher
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

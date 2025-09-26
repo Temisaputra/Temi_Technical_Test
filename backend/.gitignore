@@ -1,0 +1,68 @@
+# Go specific ignores
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Output of `go build`
+*.out
+*.test
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Go vendor directory (if you're not committing it)
+vendor/
+
+# IDE/editor directories and files
+.vscode/
+.idea/
+*.swp
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Config
+.env
+.env.*
+
+# Dependency directories
+node_modules/
+tmp/
+temp/
+
+# Compiled static files
+/public/static/
+dist/
+build/
+
+# Database & runtime
+*.sqlite
+*.db
+*.pid
+*.lock
+
+# XAMPP-specific (if running within XAMPP's htdocs)
+xampp/
+htdocs/
+*.sql
+
+# Coverage reports
+coverage.out
+
+# Local development tools
+*.local
+
+# GORM generated files (if any custom ones used)
+gorm_generated.go
+
+
+# FRONTEND (React, Next.js, etc.) specific ignores
