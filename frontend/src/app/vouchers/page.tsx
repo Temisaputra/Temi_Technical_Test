@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { Voucher, Meta } from "@/types/voucher";
 import VoucherTable from "@/components/VoucherTable";
+import Papa from "papaparse";
 
 export default function VoucherListPage() {
-    const router = useRouter();
+  const router = useRouter();
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [meta, setMeta] = useState<Meta | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   // query state
   const [page, setPage] = useState(1);
@@ -46,8 +49,56 @@ const handleDelete = async (id: number) => {
     console.error("Error deleting voucher:", err.response?.data || err.message);
     alert("Failed to delete voucher");
   }
-};
+  };
+  
+ // 📤 Export CSV (langsung download dari backend)
+  const handleExport = async () => {
+    try {
+      const res = await api.get("/vouchers/export-csv", {
+        responseType: "blob", // supaya dapat file binary
+      });
 
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "vouchers.csv");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error("Export failed:", err);
+      alert("Export gagal");
+    }
+  };
+
+  // 📥 Import CSV (pakai multipart/form-data)
+ const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const token = localStorage.getItem("token");
+      await api.post("/vouchers/upload-csv", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      alert("Import berhasil");
+      await fetchVouchers(); // ⬅️ tunggu refresh data selesai
+    } catch (err: any) {
+      console.error("Import failed:", err.response?.data || err.message);
+      alert("Import gagal: " + (err.response?.data?.message || err.message));
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""; // ⬅️ reset supaya bisa upload file sama lagi
+      }
+    }
+  };
   useEffect(() => {
     fetchVouchers();
   }, [page, pageSize, keyword, orderBy, orderType]);
@@ -56,12 +107,30 @@ const handleDelete = async (id: number) => {
       <div className="space-y-4">
         <div className="flex justify-between items-end">
           <h1 className="text-2xl font-bold">Voucher List</h1>
+         <div className="flex gap-2">
           <button
             onClick={() => router.push("/vouchers/create")}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Create Voucher
           </button>
+          <button
+            onClick={handleExport}
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            Export CSV
+          </button>
+          <label className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 cursor-pointer">
+            Import CSV
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              onChange={handleImport}
+              className="hidden"
+            />
+          </label>
+        </div>
         </div>
       {/* Search box */}
       <input
